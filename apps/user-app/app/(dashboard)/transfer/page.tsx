@@ -33,6 +33,13 @@ async function getOnRampTransactions() {
     }))
 }
 
+/* 
+    You don't need this because when you use anything which take cookies, or user specific
+    then next.js automatically set to no cache, if there is no user specific still wants to cache use this but router.refresh() or router.push() still requires
+    export const dynamic = "force-dynamic";
+*/
+
+
 export default async function() {
     const balance = await getBalance();
     const transactions = await getOnRampTransactions();
