@@ -12,7 +12,7 @@ export const p2pTransfer = async (number: string, amount: number)=> {
             status: 403
         }
     }
-    
+    const userIdofSender = session?.user?.id 
     const userToSend = await prisma.user.findFirst({
         where: {
             number
@@ -26,7 +26,16 @@ export const p2pTransfer = async (number: string, amount: number)=> {
     }
 
     try {
+        /*
+            this is done so that no two concurrent transaction happen to avoid errorness in the program
+        */
         await prisma.$transaction(async (tx)=>{
+            await tx.$queryRaw`
+                SELECT *
+                FROM "Balance"
+                WHERE "userId"= ${Number(userIdofSender)}
+                FOR UPDATE;
+            `
             const balance = await tx.balance.findUnique({
                 where: {
                     userId: Number(session.user.id)
@@ -76,10 +85,10 @@ export const p2pTransfer = async (number: string, amount: number)=> {
             message: "Done",
             status: 200
         }
-    } catch (error) {
+    } catch (error:unknown) {
         return {
             status: 404,
-            message: error
+            message: error instanceof Error ? error.message : "Something went wrong"
         }
     }
     
