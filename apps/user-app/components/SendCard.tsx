@@ -34,7 +34,8 @@ export const SendCard = () =>{
                     <div className="flex justify-center pt-4">
                         <Button onClick={async ()=>{
                             setLoading(true)
-                            await p2pTransfer(number,amount);
+                            const res = await p2pTransfer(number,amount);
+                            console.log(res)
                             setLoading(false)
                             setNumber("")
                             setAmount(0)

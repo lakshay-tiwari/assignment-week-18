@@ -12,7 +12,6 @@ export const p2pTransfer = async (number: string, amount: number)=> {
             status: 403
         }
     }
-    const userIdofSender = session?.user?.id 
     const userToSend = await prisma.user.findFirst({
         where: {
             number
@@ -33,7 +32,7 @@ export const p2pTransfer = async (number: string, amount: number)=> {
             await tx.$queryRaw`
                 SELECT *
                 FROM "Balance"
-                WHERE "userId"= ${Number(userIdofSender)}
+                WHERE "userId"= ${Number(session.user.id)}
                 FOR UPDATE;
             `
             const balance = await tx.balance.findUnique({
@@ -75,6 +74,14 @@ export const p2pTransfer = async (number: string, amount: number)=> {
                     amount: {
                         increment: amount*100
                     }
+                }
+            })
+            await tx.p2pTransfer.create({
+                data: {
+                    amount: amount*100,
+                    senderId: Number(session.user.id),
+                    receiverId: userToSend.id,
+                    timestamp: new Date()
                 }
             })
         })
